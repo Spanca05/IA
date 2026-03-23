@@ -6,9 +6,9 @@ def parse_input(file_path):
         rows, columns, vehicles, number_of_rides, bonus, steps = map(int, data.split())
         rides = file.readlines()
         rides_list = []
-        for ride in rides:
+        for ride_id, ride in enumerate(rides):
             row_start, column_start, row_end, column_end, earliest_start, latest_finish = map(int, ride.split())
-            ride_obj = Ride(row_start, column_start, row_end, column_end, earliest_start, latest_finish)
+            ride_obj = Ride(row_start, column_start, row_end, column_end, earliest_start, latest_finish, ride_id=ride_id)
             rides_list.append(ride_obj)
 
         if (number_of_rides != len(rides_list)):

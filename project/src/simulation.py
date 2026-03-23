@@ -12,6 +12,7 @@ def receives_points(finish_time, latest_finish):
 
 def ride_simulation(vehicle, ride, bonus):
     points = 0
+    previous_time = vehicle.time
 
     start_arrival = vehicle.time + abs(ride.start_row - vehicle.row) + abs(ride.start_column - vehicle.column)
     start_time = max(start_arrival, ride.earliest_start)
@@ -27,7 +28,9 @@ def ride_simulation(vehicle, ride, bonus):
     vehicle.column = ride.end_column
     vehicle.time = finish_time
 
-    return points
+    cost = finish_time - previous_time
+
+    return (points, cost)
 
 
 def simulate_rides_for_vehicle(vehicle, rides, bonus):
@@ -36,7 +39,8 @@ def simulate_rides_for_vehicle(vehicle, rides, bonus):
     temp_vehicle = Vehicle(vehicle.id, vehicle.row, vehicle.column, vehicle.time)
 
     for ride in rides:
-        points += ride_simulation(temp_vehicle, ride, bonus)
+        ride_points, _ = ride_simulation(temp_vehicle, ride, bonus)
+        points += ride_points
 
     return points
 

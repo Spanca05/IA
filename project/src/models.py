@@ -1,5 +1,6 @@
 class Ride:
-    def __init__(self, start_row, start_column, end_row, end_column, earliest_start, latest_finish):
+    def __init__(self, start_row, start_column, end_row, end_column, earliest_start, latest_finish, ride_id=None):
+        self.id = ride_id
         self.start_row = start_row
         self.start_column = start_column
         self.end_row = end_row
@@ -9,10 +10,13 @@ class Ride:
         self.distance = abs(end_row - start_row) + abs(end_column - start_column)
 
     def __str__(self):
-        return f"Ride from ({self.start_row},{self.start_column}) to ({self.end_row},{self.end_column}), earliest start {self.earliest_start}, latest finish {self.latest_finish}, and with distance {self.distance}"
+        ride_id = "?" if self.id is None else self.id
+        return f"Ride {ride_id}: ({self.start_row},{self.start_column}) -> ({self.end_row},{self.end_column}), earliest start {self.earliest_start}, latest finish {self.latest_finish}, distance {self.distance}"
     
     def __repr__(self):
-        return self.__str__()
+        if self.id is None:
+            return "Ride(?)"
+        return f"Ride({self.id})"
 
 class Problem:
     def __init__(self, rows, columns, vehicles, rides, bonus, steps):
