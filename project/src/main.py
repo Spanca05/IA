@@ -46,19 +46,26 @@ def ask_algorithm():
         print("Algoritmos disponíveis:")
         print("1. Greedy algorithm")
         print("2. Hill-Climbing algorithm")
-        user_value = input("Escolha o número do algoritmo (1-2):").strip()
+        print("3. Simulated Annealing algorithm")
+        user_value = input("Escolha o número do algoritmo (1-3):").strip()
 
-        if user_value in ("1", "2"):
+        if user_value in ("1", "2", "3"):
             return int(user_value)
         
-        print("Valor inválido. Tem de ser um numero entre 1 e 2.")
+        print("Valor inválido. Tem de ser um numero entre 1 e 3.")
 
 
 def main():
     instance_number = ask_instance_number()
     algorithm_number = ask_algorithm()
 
-    algorithm_name = "greedy" if algorithm_number == 1 else "hill_climbing"
+    switcher = {
+        1: "greedy",
+        2: "hill_climbing",
+        3: "simulated_annealing"
+    }
+
+    algorithm_name = switcher.get(algorithm_number)
 
     input_path = f"data/input_{instance_number}.txt"
     output_path = f"results/{algorithm_name}_output_{instance_number}.txt"
