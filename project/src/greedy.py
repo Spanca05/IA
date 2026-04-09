@@ -4,13 +4,16 @@ from simulation import ride_simulation
 def greedy_heuristic(vehicle, ride, bonus):
     temp_vehicle = Vehicle(vehicle.id, vehicle.row, vehicle.column, vehicle.time)
     (points, cost) = ride_simulation(temp_vehicle, ride, bonus)
+
+    if cost == 0:
+        return 0
     
     return points / cost
     
 
 def greedy_solution(problem):
     vehicles = []
-    remaining_rides = problem.rides
+    remaining_rides = list(problem.rides)
     solution = [[] for _ in range(problem.vehicles)]
 
     for id in range(problem.vehicles):
