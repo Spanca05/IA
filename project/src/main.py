@@ -1,7 +1,7 @@
 from parser import parse_input
 from greedy import greedy_solution
 from output import write_output
-from simulation import simulate_rides_for_vehicles
+from evaluator import evaluate_solution
 from models import Vehicle
 
 
@@ -18,13 +18,9 @@ def format_solution(solution):
 def solve_instance(input_path, output_path, show_solution=True):
     problem = parse_input(input_path)
     solution = greedy_solution(problem)
-    vehicles = [Vehicle(i) for i in range(problem.vehicles)]
-    score = simulate_rides_for_vehicles(
-        vehicles,
-        solution,
-        problem.bonus,
-    )
-
+    
+    score = evaluate_solution(problem, solution)
+    
     write_output(solution, output_path)
 
     print(f"Input: {input_path}")
