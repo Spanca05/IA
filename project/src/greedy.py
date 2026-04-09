@@ -1,6 +1,7 @@
 from models import Vehicle
 from simulation import ride_simulation
 
+
 def greedy_heuristic(vehicle, ride, bonus):
     temp_vehicle = Vehicle(vehicle.id, vehicle.row, vehicle.column, vehicle.time)
     (points, cost) = ride_simulation(temp_vehicle, ride, bonus)

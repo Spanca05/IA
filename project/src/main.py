@@ -1,8 +1,6 @@
 from parser import parse_input
-from greedy import greedy_solution
+from solvers import solve_with_algorithm
 from output import write_output
-from evaluator import evaluate_solution
-from models import Vehicle
 
 
 def format_solution(solution):
@@ -15,20 +13,20 @@ def format_solution(solution):
     return "\n".join(lines)
 
 
-def solve_instance(input_path, output_path, show_solution=True):
+def solve_instance(input_path, output_path, algorithm_name, show_solution=True):
     problem = parse_input(input_path)
-    solution = greedy_solution(problem)
     
-    score = evaluate_solution(problem, solution)
+    solution, score = solve_with_algorithm(problem, algorithm_name)
     
     write_output(solution, output_path)
 
     print(f"Input: {input_path}")
+    print(f"Algorithm: {algorithm_name}")
     print(f"Score: {score}")
     print(f"Output: {output_path}")
 
     if show_solution:
-        print("Greedy solution (ride ids per vehicle):")
+        print(f"{algorithm_name.capitalize()} solution (ride ids per vehicle):")
         print(format_solution(solution))
 
     return score
@@ -43,14 +41,29 @@ def ask_instance_number():
 
         print("Valor invalido. Tem de ser um numero entre 1 e 3.")
 
+def ask_algorithm():
+    while True:
+        print("Algoritmos disponíveis:")
+        print("1. Greedy algorithm")
+        print("2. Hill-Climbing algorithm")
+        user_value = input("Escolha o número do algoritmo (1-2):").strip()
+
+        if user_value in ("1", "2"):
+            return int(user_value)
+        
+        print("Valor inválido. Tem de ser um numero entre 1 e 2.")
+
 
 def main():
     instance_number = ask_instance_number()
+    algorithm_number = ask_algorithm()
+
+    algorithm_name = "greedy" if algorithm_number == 1 else "hill_climbing"
 
     input_path = f"data/input_{instance_number}.txt"
-    output_path = f"results/greedy_output_{instance_number}.txt"
+    output_path = f"results/{algorithm_name}_output_{instance_number}.txt"
 
-    solve_instance(input_path, output_path, show_solution=True)
+    solve_instance(input_path, output_path, algorithm_name, show_solution=True)
 
 
 main()
