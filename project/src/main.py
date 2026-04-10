@@ -16,7 +16,7 @@ def format_solution(solution):
 def solve_instance(input_path, output_path, algorithm_name, show_solution=True):
     problem = parse_input(input_path)
     
-    solution, score = solve_with_algorithm(problem, algorithm_name)
+    solution, score, history = solve_with_algorithm(problem, algorithm_name)
     
     write_output(solution, output_path)
 

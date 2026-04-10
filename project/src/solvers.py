@@ -7,18 +7,19 @@ from evaluator import evaluate_solution
 def greedy_solver(problem):
     solution = greedy_solution(problem)
     score = evaluate_solution(problem, solution)
-    return solution, score
+    history = [score]
+    return solution, score, history
 
 
 def hill_climbing_solver(problem):
     initial_solution = greedy_solution(problem)
-    solution, score = hill_climbing_solution(problem, initial_solution)
-    return solution, score
+    solution, score, history = hill_climbing_solution(problem, initial_solution)
+    return solution, score, history
 
-def simulated_annealing_solver(problem):
+def simulated_annealing_solver(problem, **kwargs):
     initial_solution = greedy_solution(problem)
-    solution, score = simulated_annealing_solution(problem, initial_solution)
-    return solution, score
+    solution, score, history = simulated_annealing_solution(problem, initial_solution, **kwargs)
+    return solution, score, history
 
 
 SOLVERS = {
@@ -28,9 +29,9 @@ SOLVERS = {
 }
 
 
-def solve_with_algorithm(problem, algorithm):
+def solve_with_algorithm(problem, algorithm, **kwargs):
     if algorithm not in SOLVERS:
         available = ", ".join(SOLVERS.keys())
         raise ValueError(f"Unknown algorithm: {algorithm}. Available: {available}")
     
-    return SOLVERS[algorithm](problem)
+    return SOLVERS[algorithm](problem, **kwargs)
