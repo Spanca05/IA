@@ -1,6 +1,7 @@
 from greedy import greedy_solution
 from hill_climbing import hill_climbing_solution
 from simulated_annealing import simulated_annealing_solution
+from genetic_algorithm import genetic_algorithm_solution
 from evaluator import evaluate_solution
 
 
@@ -21,10 +22,16 @@ def simulated_annealing_solver(problem):
     return solution, score
 
 
+def genetic_algorithm_solver(problem):
+    solution, score = genetic_algorithm_solution(problem)
+    return solution, score
+
+
 SOLVERS = {
     "greedy": greedy_solver,
     "hill_climbing": hill_climbing_solver,
-    "simulated_annealing": simulated_annealing_solver
+    "simulated_annealing": simulated_annealing_solver,
+    "genetic_algorithm": genetic_algorithm_solver,
 }
 
 

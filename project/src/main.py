@@ -47,12 +47,13 @@ def ask_algorithm():
         print("1. Greedy algorithm")
         print("2. Hill-Climbing algorithm")
         print("3. Simulated Annealing algorithm")
-        user_value = input("Escolha o número do algoritmo (1-3):").strip()
+        print("4. Genetic Algorithm")
+        user_value = input("Escolha o número do algoritmo (1-4):").strip()
 
-        if user_value in ("1", "2", "3"):
+        if user_value in ("1", "2", "3", "4"):
             return int(user_value)
         
-        print("Valor inválido. Tem de ser um numero entre 1 e 3.")
+        print("Valor inválido. Tem de ser um numero entre 1 e 4.")
 
 
 def main():
@@ -62,7 +63,8 @@ def main():
     switcher = {
         1: "greedy",
         2: "hill_climbing",
-        3: "simulated_annealing"
+        3: "simulated_annealing",
+        4: "genetic_algorithm",
     }
 
     algorithm_name = switcher.get(algorithm_number)
@@ -73,4 +75,5 @@ def main():
     solve_instance(input_path, output_path, algorithm_name, show_solution=True)
 
 
-main()
+if __name__ == "__main__":
+    main()
