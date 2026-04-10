@@ -9,6 +9,7 @@ GENERATIONS = 80
 TOURNAMENT_SIZE = 3
 ELITE_COUNT = 4
 MUTATION_RATE = 0.35
+ORDER_CROSSOVER_PROB = 0.5
 
 
 def _clone_solution(solution):
@@ -35,24 +36,26 @@ def _build_solution_from_order(problem, ordered_rides):
 
 
 def _normalize_solution(problem, solution):
-    all_rides = _flatten_solution(solution)
+    normalized = [[] for _ in range(problem.vehicles)]
 
-    # Keep each ride only once and preserve the first occurrence order.
+    # Keep first occurrence and preserve per-vehicle ordering.
     seen = set()
-    unique_rides = []
-    for ride in all_rides:
+    for vehicle_idx, rides in enumerate(solution):
+        for ride in rides:
+            if ride.id in seen:
+                continue
+            seen.add(ride.id)
+            normalized[vehicle_idx].append(ride)
+
+    # Repair missing rides so each ride appears exactly once.
+    for ride in problem.rides:
         if ride.id in seen:
             continue
+        target_vehicle = min(range(problem.vehicles), key=lambda idx: len(normalized[idx]))
+        normalized[target_vehicle].append(ride)
         seen.add(ride.id)
-        unique_rides.append(ride)
 
-    # Repair missing rides so the chromosome always contains each ride exactly once.
-    for ride in problem.rides:
-        if ride.id not in seen:
-            unique_rides.append(ride)
-            seen.add(ride.id)
-
-    return _build_solution_from_order(problem, unique_rides)
+    return normalized
 
 
 def _random_solution(problem):
@@ -117,18 +120,102 @@ def _ordered_crossover(problem, parent_a, parent_b):
     return _build_solution_from_order(problem, child)
 
 
-def _mutate(problem, solution):
+def _vehicle_based_crossover(problem, parent_a, parent_b):
+    vehicle_count = problem.vehicles
+    if vehicle_count <= 0:
+        return []
+
+    child = [[] for _ in range(vehicle_count)]
+    chosen_count = random.randint(1, vehicle_count)
+    inherited_vehicles = set(random.sample(range(vehicle_count), chosen_count))
+
+    used = set()
+
+    # Copy full vehicle plans from parent A for selected vehicles.
+    for vehicle_idx in inherited_vehicles:
+        for ride in parent_a[vehicle_idx]:
+            if ride.id in used:
+                continue
+            child[vehicle_idx].append(ride)
+            used.add(ride.id)
+
+    # Fill remaining rides using parent B assignments and order.
+    for vehicle_idx, rides in enumerate(parent_b):
+        for ride in rides:
+            if ride.id in used:
+                continue
+            child[vehicle_idx].append(ride)
+            used.add(ride.id)
+
+    return child
+
+
+def _crossover(problem, parent_a, parent_b):
+    if random.random() < ORDER_CROSSOVER_PROB:
+        return _ordered_crossover(problem, parent_a, parent_b)
+    return _vehicle_based_crossover(problem, parent_a, parent_b)
+
+
+def _mutate_swap(solution):
+    positions = []
+    for vehicle_idx, rides in enumerate(solution):
+        for ride_idx, _ in enumerate(rides):
+            positions.append((vehicle_idx, ride_idx))
+
+    if len(positions) < 2:
+        return False
+
+    (v1, r1), (v2, r2) = random.sample(positions, 2)
+    solution[v1][r1], solution[v2][r2] = solution[v2][r2], solution[v1][r1]
+    return True
+
+
+def _mutate_move(solution):
+    non_empty_vehicles = [idx for idx, rides in enumerate(solution) if rides]
+    if not non_empty_vehicles or len(solution) < 2:
+        return False
+
+    from_vehicle = random.choice(non_empty_vehicles)
+    to_options = [idx for idx in range(len(solution)) if idx != from_vehicle]
+    if not to_options:
+        return False
+
+    to_vehicle = random.choice(to_options)
+
+    ride_idx = random.randrange(len(solution[from_vehicle]))
+    ride = solution[from_vehicle].pop(ride_idx)
+
+    insert_pos = random.randrange(len(solution[to_vehicle]) + 1)
+    solution[to_vehicle].insert(insert_pos, ride)
+    return True
+
+
+def _mutate_reorder(solution):
+    reorderable_vehicles = [idx for idx, rides in enumerate(solution) if len(rides) >= 2]
+    if not reorderable_vehicles:
+        return False
+
+    vehicle_idx = random.choice(reorderable_vehicles)
+    i, j = random.sample(range(len(solution[vehicle_idx])), 2)
+    solution[vehicle_idx][i], solution[vehicle_idx][j] = solution[vehicle_idx][j], solution[vehicle_idx][i]
+    return True
+
+
+def _mutate(solution):
     mutated = _clone_solution(solution)
 
-    rides = _flatten_solution(mutated)
-    if len(rides) < 2:
+    mutation_ops = [_mutate_move, _mutate_swap, _mutate_reorder]
+    random.shuffle(mutation_ops)
+
+    for mutate_op in mutation_ops:
+        if mutate_op(mutated):
+            return mutated
+
+    # No feasible mutation for this chromosome shape.
+    if len(_flatten_solution(mutated)) < 2:
         return mutated
 
-    # Small mutation: swap two random rides in the global chromosome order.
-    i, j = random.sample(range(len(rides)), 2)
-    rides[i], rides[j] = rides[j], rides[i]
-
-    return _build_solution_from_order(problem, rides)
+    return mutated
 
 
 def genetic_algorithm_solution(problem):
@@ -154,9 +241,9 @@ def genetic_algorithm_solution(problem):
             parent_a = _tournament_selection(problem, population, fitness_cache)
             parent_b = _tournament_selection(problem, population, fitness_cache)
 
-            child = _ordered_crossover(problem, parent_a, parent_b)
+            child = _crossover(problem, parent_a, parent_b)
             if random.random() < MUTATION_RATE:
-                child = _mutate(problem, child)
+                child = _mutate(child)
 
             new_population.append(_normalize_solution(problem, child))
 
