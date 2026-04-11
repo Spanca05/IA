@@ -30,6 +30,20 @@ cd project
 python src/main.py
 ```
 
+### Benchmark e Comparação de Algoritmos
+
+Para comparar algoritmos e parameterizações (com médias de score e tempo):
+
+```bash
+cd project
+python src/benchmark.py --runs 10 --seed 42
+```
+
+Resultados gerados:
+- `results/benchmark_detailed.csv` (resultados por execução)
+- `results/benchmark_summary.csv` (médias/desvios por configuração)
+- `results/benchmark_summary.txt` (resumo legível em texto)
+
 O programa vai pedir para escolher uma instância (1, 2 ou 3) e executar o greedy solver.
 
 ### Exemplo

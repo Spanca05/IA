@@ -23,8 +23,8 @@ def simulated_annealing_solver(problem, **kwargs):
     return solution, score, history
 
 
-def genetic_algorithm_solver(problem):
-    solution, score, history = genetic_algorithm_solution(problem, return_history=True)
+def genetic_algorithm_solver(problem, **kwargs):
+    solution, score, history = genetic_algorithm_solution(problem, return_history=True, **kwargs)
     return solution, score, history
 
 

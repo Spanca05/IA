@@ -67,13 +67,13 @@ def random_solution(problem):
     return build_solution_from_order(problem, rides)
 
 
-def initial_population(problem):
+def initial_population(problem, population_size):
     population = []
 
     # Seed the population with one heuristic solution for faster convergence.
     population.append(clone_solution(greedy_solution(problem)))
 
-    while len(population) < DEFAULT_POPULATION_SIZE:
+    while len(population) < population_size:
         population.append(random_solution(problem))
 
     return population
@@ -83,8 +83,8 @@ def fitness(problem, solution):
     return evaluate_solution(problem, solution)
 
 
-def tournament_selection(problem, population, fitness_cache):
-    sample_size = min(DEFAULT_TOURNAMENT_SIZE, len(population))
+def tournament_selection(problem, population, fitness_cache, tournament_size):
+    sample_size = min(tournament_size, len(population))
     contenders = random.sample(population, sample_size)
     contenders.sort(key=lambda candidate: fitness_cache[id(candidate)], reverse=True)
     return contenders[0]
@@ -153,8 +153,8 @@ def vehicle_based_crossover(problem, parent_a, parent_b):
     return child
 
 
-def crossover(problem, parent_a, parent_b):
-    if random.random() < DEFAULT_ORDER_CROSSOVER_PROB:
+def crossover(problem, parent_a, parent_b, order_crossover_prob):
+    if random.random() < order_crossover_prob:
         return ordered_crossover(problem, parent_a, parent_b)
     return vehicle_based_crossover(problem, parent_a, parent_b)
 
@@ -221,14 +221,38 @@ def mutate(solution):
     return mutated
 
 
-def genetic_algorithm_solution(problem, return_history=False):
-    population = initial_population(problem)
+def genetic_algorithm_solution(
+    problem,
+    return_history=False,
+    population_size=DEFAULT_POPULATION_SIZE,
+    generations=DEFAULT_GENERATIONS,
+    tournament_size=DEFAULT_TOURNAMENT_SIZE,
+    elite_count=DEFAULT_ELITE_COUNT,
+    mutation_rate=DEFAULT_MUTATION_RATE,
+    order_crossover_prob=DEFAULT_ORDER_CROSSOVER_PROB,
+):
+    if population_size <= 0:
+        raise ValueError("population_size must be > 0")
+    if generations <= 0:
+        raise ValueError("generations must be > 0")
+    if tournament_size <= 0:
+        raise ValueError("tournament_size must be > 0")
+    if elite_count < 0:
+        raise ValueError("elite_count must be >= 0")
+    if elite_count > population_size:
+        raise ValueError("elite_count must be <= population_size")
+    if not 0 <= mutation_rate <= 1:
+        raise ValueError("mutation_rate must be in [0, 1]")
+    if not 0 <= order_crossover_prob <= 1:
+        raise ValueError("order_crossover_prob must be in [0, 1]")
+
+    population = initial_population(problem, population_size)
 
     best_solution = None
     best_score = -1
     history = []
 
-    for generation in range(DEFAULT_GENERATIONS):
+    for generation in range(generations):
         fitness_cache = {id(candidate): fitness(problem, candidate) for candidate in population}
 
         generation_best = max(population, key=lambda candidate: fitness_cache[id(candidate)])
@@ -240,15 +264,15 @@ def genetic_algorithm_solution(problem, return_history=False):
 
         history.append({"generation": generation, "best_score": best_score})
 
-        elites = sorted(population, key=lambda candidate: fitness_cache[id(candidate)], reverse=True)[:DEFAULT_ELITE_COUNT]
+        elites = sorted(population, key=lambda candidate: fitness_cache[id(candidate)], reverse=True)[:elite_count]
         new_population = [clone_solution(elite) for elite in elites]
 
-        while len(new_population) < DEFAULT_POPULATION_SIZE:
-            parent_a = tournament_selection(problem, population, fitness_cache)
-            parent_b = tournament_selection(problem, population, fitness_cache)
+        while len(new_population) < population_size:
+            parent_a = tournament_selection(problem, population, fitness_cache, tournament_size)
+            parent_b = tournament_selection(problem, population, fitness_cache, tournament_size)
 
-            child = crossover(problem, parent_a, parent_b)
-            if random.random() < DEFAULT_MUTATION_RATE:
+            child = crossover(problem, parent_a, parent_b, order_crossover_prob)
+            if random.random() < mutation_rate:
                 child = mutate(child)
 
             new_population.append(normalize_solution(problem, child))
