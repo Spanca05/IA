@@ -39,5 +39,5 @@ class Vehicle:
         self.rides = []
 
     def __str__(self):
-        return f"Vehicle {self.id} is in position {self.position} at time {self.time}, with scheduled rides {self.rides}"
+        return f"Vehicle {self.id} is in position ({self.row},{self.column}) at time {self.time}, with scheduled rides {self.rides}"
     
