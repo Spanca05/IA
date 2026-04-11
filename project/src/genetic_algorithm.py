@@ -4,26 +4,26 @@ from evaluator import evaluate_solution
 from greedy import greedy_solution
 
 
-POPULATION_SIZE = 30
-GENERATIONS = 80
-TOURNAMENT_SIZE = 3
-ELITE_COUNT = 4
-MUTATION_RATE = 0.35
-ORDER_CROSSOVER_PROB = 0.5
+DEFAULT_POPULATION_SIZE = 30
+DEFAULT_GENERATIONS = 80
+DEFAULT_TOURNAMENT_SIZE = 3
+DEFAULT_ELITE_COUNT = 4
+DEFAULT_MUTATION_RATE = 0.35
+DEFAULT_ORDER_CROSSOVER_PROB = 0.5
 
 
-def _clone_solution(solution):
+def clone_solution(solution):
     return [rides[:] for rides in solution]
 
 
-def _flatten_solution(solution):
+def flatten_solution(solution):
     rides = []
     for vehicle_rides in solution:
         rides.extend(vehicle_rides)
     return rides
 
 
-def _build_solution_from_order(problem, ordered_rides):
+def build_solution_from_order(problem, ordered_rides):
     vehicles = problem.vehicles
     if vehicles <= 0:
         return []
@@ -35,7 +35,10 @@ def _build_solution_from_order(problem, ordered_rides):
     return solution
 
 
-def _normalize_solution(problem, solution):
+def normalize_solution(problem, solution):
+    if problem.vehicles <= 0:
+        return []
+
     normalized = [[] for _ in range(problem.vehicles)]
 
     # Keep first occurrence and preserve per-vehicle ordering.
@@ -58,42 +61,42 @@ def _normalize_solution(problem, solution):
     return normalized
 
 
-def _random_solution(problem):
+def random_solution(problem):
     rides = list(problem.rides)
     random.shuffle(rides)
-    return _build_solution_from_order(problem, rides)
+    return build_solution_from_order(problem, rides)
 
 
-def _initial_population(problem):
+def initial_population(problem):
     population = []
 
     # Seed the population with one heuristic solution for faster convergence.
-    population.append(_clone_solution(greedy_solution(problem)))
+    population.append(clone_solution(greedy_solution(problem)))
 
-    while len(population) < POPULATION_SIZE:
-        population.append(_random_solution(problem))
+    while len(population) < DEFAULT_POPULATION_SIZE:
+        population.append(random_solution(problem))
 
     return population
 
 
-def _fitness(problem, solution):
+def fitness(problem, solution):
     return evaluate_solution(problem, solution)
 
 
-def _tournament_selection(problem, population, fitness_cache):
-    sample_size = min(TOURNAMENT_SIZE, len(population))
+def tournament_selection(problem, population, fitness_cache):
+    sample_size = min(DEFAULT_TOURNAMENT_SIZE, len(population))
     contenders = random.sample(population, sample_size)
     contenders.sort(key=lambda candidate: fitness_cache[id(candidate)], reverse=True)
     return contenders[0]
 
 
-def _ordered_crossover(problem, parent_a, parent_b):
-    rides_a = _flatten_solution(parent_a)
-    rides_b = _flatten_solution(parent_b)
+def ordered_crossover(problem, parent_a, parent_b):
+    rides_a = flatten_solution(parent_a)
+    rides_b = flatten_solution(parent_b)
 
     size = len(rides_a)
     if size == 0:
-        return _clone_solution(parent_a)
+        return clone_solution(parent_a)
 
     left, right = sorted(random.sample(range(size), 2)) if size > 1 else (0, 0)
 
@@ -117,10 +120,10 @@ def _ordered_crossover(problem, parent_a, parent_b):
             if value is None:
                 child[idx] = missing.pop(0)
 
-    return _build_solution_from_order(problem, child)
+    return build_solution_from_order(problem, child)
 
 
-def _vehicle_based_crossover(problem, parent_a, parent_b):
+def vehicle_based_crossover(problem, parent_a, parent_b):
     vehicle_count = problem.vehicles
     if vehicle_count <= 0:
         return []
@@ -150,13 +153,13 @@ def _vehicle_based_crossover(problem, parent_a, parent_b):
     return child
 
 
-def _crossover(problem, parent_a, parent_b):
-    if random.random() < ORDER_CROSSOVER_PROB:
-        return _ordered_crossover(problem, parent_a, parent_b)
-    return _vehicle_based_crossover(problem, parent_a, parent_b)
+def crossover(problem, parent_a, parent_b):
+    if random.random() < DEFAULT_ORDER_CROSSOVER_PROB:
+        return ordered_crossover(problem, parent_a, parent_b)
+    return vehicle_based_crossover(problem, parent_a, parent_b)
 
 
-def _mutate_swap(solution):
+def mutate_swap(solution):
     positions = []
     for vehicle_idx, rides in enumerate(solution):
         for ride_idx, _ in enumerate(rides):
@@ -170,7 +173,7 @@ def _mutate_swap(solution):
     return True
 
 
-def _mutate_move(solution):
+def mutate_move(solution):
     non_empty_vehicles = [idx for idx, rides in enumerate(solution) if rides]
     if not non_empty_vehicles or len(solution) < 2:
         return False
@@ -190,7 +193,7 @@ def _mutate_move(solution):
     return True
 
 
-def _mutate_reorder(solution):
+def mutate_reorder(solution):
     reorderable_vehicles = [idx for idx, rides in enumerate(solution) if len(rides) >= 2]
     if not reorderable_vehicles:
         return False
@@ -201,10 +204,10 @@ def _mutate_reorder(solution):
     return True
 
 
-def _mutate(solution):
-    mutated = _clone_solution(solution)
+def mutate(solution):
+    mutated = clone_solution(solution)
 
-    mutation_ops = [_mutate_move, _mutate_swap, _mutate_reorder]
+    mutation_ops = [mutate_move, mutate_swap, mutate_reorder]
     random.shuffle(mutation_ops)
 
     for mutate_op in mutation_ops:
@@ -212,41 +215,47 @@ def _mutate(solution):
             return mutated
 
     # No feasible mutation for this chromosome shape.
-    if len(_flatten_solution(mutated)) < 2:
+    if len(flatten_solution(mutated)) < 2:
         return mutated
 
     return mutated
 
 
-def genetic_algorithm_solution(problem):
-    population = _initial_population(problem)
+def genetic_algorithm_solution(problem, return_history=False):
+    population = initial_population(problem)
 
     best_solution = None
     best_score = -1
+    history = []
 
-    for _ in range(GENERATIONS):
-        fitness_cache = {id(candidate): _fitness(problem, candidate) for candidate in population}
+    for generation in range(DEFAULT_GENERATIONS):
+        fitness_cache = {id(candidate): fitness(problem, candidate) for candidate in population}
 
         generation_best = max(population, key=lambda candidate: fitness_cache[id(candidate)])
         generation_best_score = fitness_cache[id(generation_best)]
 
         if generation_best_score > best_score:
             best_score = generation_best_score
-            best_solution = _clone_solution(generation_best)
+            best_solution = clone_solution(generation_best)
 
-        elites = sorted(population, key=lambda candidate: fitness_cache[id(candidate)], reverse=True)[:ELITE_COUNT]
-        new_population = [_clone_solution(elite) for elite in elites]
+        history.append({"generation": generation, "best_score": best_score})
 
-        while len(new_population) < POPULATION_SIZE:
-            parent_a = _tournament_selection(problem, population, fitness_cache)
-            parent_b = _tournament_selection(problem, population, fitness_cache)
+        elites = sorted(population, key=lambda candidate: fitness_cache[id(candidate)], reverse=True)[:DEFAULT_ELITE_COUNT]
+        new_population = [clone_solution(elite) for elite in elites]
 
-            child = _crossover(problem, parent_a, parent_b)
-            if random.random() < MUTATION_RATE:
-                child = _mutate(child)
+        while len(new_population) < DEFAULT_POPULATION_SIZE:
+            parent_a = tournament_selection(problem, population, fitness_cache)
+            parent_b = tournament_selection(problem, population, fitness_cache)
 
-            new_population.append(_normalize_solution(problem, child))
+            child = crossover(problem, parent_a, parent_b)
+            if random.random() < DEFAULT_MUTATION_RATE:
+                child = mutate(child)
+
+            new_population.append(normalize_solution(problem, child))
 
         population = new_population
+
+    if return_history:
+        return best_solution, best_score, history
 
     return best_solution, best_score
