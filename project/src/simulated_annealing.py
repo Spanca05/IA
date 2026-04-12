@@ -3,16 +3,26 @@ from evaluator import evaluate_solution
 import random
 import math
 
-T0 = 1000
-alpha = 0.95
-Tmin = 0.001
-max_iterations = 1000
-max_no_improvement = 100
+DEFAULT_PARAMS = {
+    "T0": 1000,
+    "alpha": 0.95,
+    "Tmin": 0.001,
+    "max_iterations": 1000,
+    "max_no_improvement": 100,
+}
 
-def schedule(t):
+def schedule(t, T0, alpha):
     return T0 * (alpha ** t)
 
-def simulated_annealing_solution(problem, initial_solution):
+def simulated_annealing_solution(problem, initial_solution, params=None):
+    params = {**DEFAULT_PARAMS, **(params or {})}
+
+    T0 = params["T0"]
+    alpha = params["alpha"]
+    Tmin = params["Tmin"]
+    max_iterations = params["max_iterations"]
+    max_no_improvement = params["max_no_improvement"]
+
     current_solution = initial_solution
     current_score = evaluate_solution(problem, current_solution)
 
@@ -21,7 +31,7 @@ def simulated_annealing_solution(problem, initial_solution):
     
     no_improvement = 0
     t = 0
-    T = schedule(t)
+    T = schedule(t, T0, alpha)
 
     while t < max_iterations and T > Tmin and no_improvement < max_no_improvement:
         neighbors = get_neighbors(current_solution)
@@ -51,6 +61,6 @@ def simulated_annealing_solution(problem, initial_solution):
 
 
         t += 1
-        T = schedule(t)
+        T = schedule(t, T0, alpha)
 
     return best_solution, best_score
