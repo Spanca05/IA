@@ -15,13 +15,13 @@ def schedule(t, T0, alpha):
     return T0 * (alpha ** t)
 
 def simulated_annealing_solution(problem, initial_solution, params=None):
-    params = {**DEFAULT_PARAMS, **(params or {})}
+    merged_params = {**DEFAULT_PARAMS, **(params or {})}
 
-    T0 = params["T0"]
-    alpha = params["alpha"]
-    Tmin = params["Tmin"]
-    max_iterations = params["max_iterations"]
-    max_no_improvement = params["max_no_improvement"]
+    T0 = merged_params["T0"]
+    alpha = merged_params["alpha"]
+    Tmin = merged_params["Tmin"]
+    max_iterations = merged_params["max_iterations"]
+    max_no_improvement = merged_params["max_no_improvement"]
 
     current_solution = initial_solution
     current_score = evaluate_solution(problem, current_solution)
@@ -32,6 +32,8 @@ def simulated_annealing_solution(problem, initial_solution, params=None):
     no_improvement = 0
     t = 0
     T = schedule(t, T0, alpha)
+
+    history = [best_score]
 
     while t < max_iterations and T > Tmin and no_improvement < max_no_improvement:
         neighbors = get_neighbors(current_solution)
@@ -63,4 +65,6 @@ def simulated_annealing_solution(problem, initial_solution, params=None):
         t += 1
         T = schedule(t, T0, alpha)
 
-    return best_solution, best_score
+        history.append(best_score)
+
+    return best_solution, best_score, history

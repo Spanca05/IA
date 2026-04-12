@@ -19,6 +19,8 @@ def hill_climbing_solution(problem, solution):
     current_solution = solution
     current_score = evaluate_solution(problem, current_solution)
 
+    history = [current_score]
+
     while True:
         neighbors = get_neighbors(current_solution)
 
@@ -33,5 +35,7 @@ def hill_climbing_solution(problem, solution):
         current_solution = best_neighbor
         current_score = best_score
 
-    return current_solution, current_score
+        history.append(current_score)
+
+    return current_solution, current_score, history
 
