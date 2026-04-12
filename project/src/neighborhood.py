@@ -3,11 +3,7 @@ import random
 def _clone_solution(solution):
     return [rides[:] for rides in solution]
 
-def get_neighbors(solution, num_neighbors=5):
-    """
-    Em vez de gerar milhões de vizinhos, gera apenas uma pequena amostra 
-    aleatória para não rebentar com a memória RAM.
-    """
+def get_neighbors(solution, num_neighbors=50):
     neighbors = []
     
     for _ in range(num_neighbors):
@@ -17,7 +13,6 @@ def get_neighbors(solution, num_neighbors=5):
     return neighbors
 
 def get_random_neighbor(solution):
-    # Escolhe uma operação ao calhas: 0 = Move, 1 = Swap, 2 = Reorder
     operations = [0, 1, 2]
     random.shuffle(operations)
 
@@ -27,7 +22,7 @@ def get_random_neighbor(solution):
         if op == 1 and _apply_random_swap(candidate): return candidate
         if op == 2 and _apply_random_reorder(candidate): return candidate
 
-    return _clone_solution(solution) # Fallback de segurança
+    return _clone_solution(solution)
 
 def _apply_random_move(candidate):
     non_empty_vehicles = [i for i, rides in enumerate(candidate) if rides]
