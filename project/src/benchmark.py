@@ -12,9 +12,14 @@ from solvers import solve_with_algorithm
 INSTANCE_IDS = [1, 2, 3, 4, 5, 6, 7]
 ALGORITHMS = ["greedy", "hill_climbing", "simulated_annealing", "genetic_algorithm"]
 
+HC_PARAM_GRID = [
+    {"start_strategy": "warm_start"},
+    {"start_strategy": "cold_start"},
+]
+
 SA_PARAM_GRID = [
-    {"T0": 800, "alpha": 0.95, "max_iterations": 600, "max_no_improvement": 80},
-    {"T0": 1500, "alpha": 0.93, "max_iterations": 1000, "max_no_improvement": 120},
+    {"start_strategy": "warm_start", "T0": 800, "alpha": 0.95, "max_iterations": 600, "max_no_improvement": 80},
+    {"start_strategy": "cold_start", "T0": 800, "alpha": 0.95, "max_iterations": 600, "max_no_improvement": 80},
 ]
 
 GA_PARAM_GRID = [
@@ -44,6 +49,8 @@ def _safe_stdev(values):
 
 
 def _param_sets_for_algorithm(algorithm):
+    if algorithm == "hill_climbing":
+        return HC_PARAM_GRID
     if algorithm == "simulated_annealing":
         return SA_PARAM_GRID
     if algorithm == "genetic_algorithm":

@@ -80,6 +80,15 @@ with tab_single:
         selected_algorithm = st.selectbox("Search Algorithm:", ["greedy", "hill_climbing", "simulated_annealing", "genetic_algorithm"], key="algo_single")
 
     algorithm_params = {}
+
+    if selected_algorithm in ("hill_climbing", "simulated_annealing"):
+        start_strategy_label = st.selectbox(
+            "Initial Solution Strategy",
+            ["Warm Start", "Cold Start"],
+            index=0,
+            help="Warm Start = starts from greedy solution; Cold Start = starts from random solution.",
+        )
+        algorithm_params['start_strategy'] = "warm_start" if start_strategy_label == "Warm Start" else "cold_start"
     
     if selected_algorithm == "simulated_annealing":
         st.markdown("**Hyperparameters (SA)**")
@@ -136,7 +145,7 @@ with tab_single:
                 
                 col1, col2, col3 = st.columns(3)
                 col1.metric("Objective Score", f"{score:,}")
-                col2.metric("Total Iterations", len(history) if history else 0)
+                col2.metric("Total Iterations", len(history) - 1 if history else 0)
                 col3.metric("Computation Time", f"{exec_time:.3f} s")
                 
                 st.divider()
@@ -181,12 +190,32 @@ with tab_benchmark:
                                     ["greedy", "hill_climbing", "simulated_annealing", "genetic_algorithm"],
                                     default=[])
     
+    bench_hc_params = {}
     bench_sa_params = {}
     bench_ga_params = {}
+
+    if "hill_climbing" in comp_algos:
+        with st.expander("Hill Climbing Settings", expanded=True):
+            hc_start_strategy_label = st.selectbox(
+                "Initial Solution Strategy",
+                ["Warm Start", "Cold Start"],
+                index=0,
+                key="b_hc_start",
+                help="Warm Start = starts from greedy solution; Cold Start = starts from random solution.",
+            )
+            bench_hc_params['start_strategy'] = "warm_start" if hc_start_strategy_label == "Warm Start" else "cold_start"
 
     if "simulated_annealing" in comp_algos:
         with st.expander("Simulated Annealing Settings", expanded=True):
             c1, c2, c3, c4 = st.columns(4)
+            sa_start_strategy_label = st.selectbox(
+                "Initial Solution Strategy",
+                ["Warm Start", "Cold Start"],
+                index=0,
+                key="b_sa_start",
+                help="Warm Start = starts from greedy solution; Cold Start = starts from random solution.",
+            )
+            bench_sa_params['start_strategy'] = "warm_start" if sa_start_strategy_label == "Warm Start" else "cold_start"
             with c1: bench_sa_params['T0'] = st.slider("Initial Temperature", 100, 5000, 1000, 100, key="b_sa_t0")
             with c2: bench_sa_params['alpha'] = st.slider("Cooling Rate", 0.80, 0.99, 0.95, 0.01, key="b_sa_alpha")
             with c3: bench_sa_params['max_iterations'] = st.number_input("Max Iterations", 100, 5000, 1000, 100, key="b_sa_iter")
@@ -223,7 +252,8 @@ with tab_benchmark:
             
             for idx, algo in enumerate(comp_algos):
                 algo_params = {}
-                if algo == "simulated_annealing": algo_params = bench_sa_params
+                if algo == "hill_climbing": algo_params = bench_hc_params
+                elif algo == "simulated_annealing": algo_params = bench_sa_params
                 elif algo == "genetic_algorithm": algo_params = bench_ga_params
                 
                 total_score = 0
