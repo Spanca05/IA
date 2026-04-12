@@ -1,79 +1,65 @@
+import random
+
 def _clone_solution(solution):
     return [rides[:] for rides in solution]
 
-
-def get_neighbors(solution):
+def get_neighbors(solution, num_neighbors=5):
+    """
+    Em vez de gerar milhões de vizinhos, gera apenas uma pequena amostra 
+    aleatória para não rebentar com a memória RAM.
+    """
     neighbors = []
-
-    neighbors.extend(get_move_neighbors(solution))
-    neighbors.extend(get_swap_neighbors(solution))
-    neighbors.extend(get_reorder_neighbors(solution))
-
+    
+    for _ in range(num_neighbors):
+        candidate = get_random_neighbor(solution)
+        neighbors.append(candidate)
+        
     return neighbors
 
+def get_random_neighbor(solution):
+    # Escolhe uma operação ao calhas: 0 = Move, 1 = Swap, 2 = Reorder
+    operations = [0, 1, 2]
+    random.shuffle(operations)
 
-def get_move_neighbors(solution):
-    neighbors = []
-    vehicle_count = len(solution)
+    for op in operations:
+        candidate = _clone_solution(solution)
+        if op == 0 and _apply_random_move(candidate): return candidate
+        if op == 1 and _apply_random_swap(candidate): return candidate
+        if op == 2 and _apply_random_reorder(candidate): return candidate
 
-    for from_vehicle in range(vehicle_count):
-        if not solution[from_vehicle]:
-            continue
+    return _clone_solution(solution) # Fallback de segurança
 
-        for ride_idx in range(len(solution[from_vehicle])):
-            for to_vehicle in range(vehicle_count):
-                if to_vehicle == from_vehicle:
-                    continue
+def _apply_random_move(candidate):
+    non_empty_vehicles = [i for i, rides in enumerate(candidate) if rides]
+    if not non_empty_vehicles or len(candidate) < 2: return False
+    
+    from_vehicle = random.choice(non_empty_vehicles)
+    to_options = [i for i in range(len(candidate)) if i != from_vehicle]
+    if not to_options: return False
+    to_vehicle = random.choice(to_options)
 
-                for insert_pos in range(len(solution[to_vehicle]) + 1):
-                    candidate = _clone_solution(solution)
-                    ride = candidate[from_vehicle].pop(ride_idx)
-                    candidate[to_vehicle].insert(insert_pos, ride)
-                    neighbors.append(candidate)
+    ride_idx = random.randrange(len(candidate[from_vehicle]))
+    ride = candidate[from_vehicle].pop(ride_idx)
+    insert_pos = random.randrange(len(candidate[to_vehicle]) + 1)
+    candidate[to_vehicle].insert(insert_pos, ride)
+    return True
 
-    return neighbors
+def _apply_random_swap(candidate):
+    non_empty_vehicles = [i for i, rides in enumerate(candidate) if rides]
+    if len(non_empty_vehicles) < 2: return False
+    
+    v1, v2 = random.sample(non_empty_vehicles, 2)
+    r1 = random.randrange(len(candidate[v1]))
+    r2 = random.randrange(len(candidate[v2]))
+    
+    candidate[v1][r1], candidate[v2][r2] = candidate[v2][r2], candidate[v1][r1]
+    return True
 
-
-def get_swap_neighbors(solution):
-    neighbors = []
-    vehicle_count = len(solution)
-
-    for first_vehicle in range(vehicle_count):
-        if not solution[first_vehicle]:
-            continue
-
-        for second_vehicle in range(first_vehicle + 1, vehicle_count):
-            if not solution[second_vehicle]:
-                continue
-
-            for first_idx in range(len(solution[first_vehicle])):
-                for second_idx in range(len(solution[second_vehicle])):
-                    candidate = _clone_solution(solution)
-                    candidate[first_vehicle][first_idx], candidate[second_vehicle][second_idx] = (
-                        candidate[second_vehicle][second_idx],
-                        candidate[first_vehicle][first_idx],
-                    )
-                    neighbors.append(candidate)
-
-    return neighbors
-
-
-def get_reorder_neighbors(solution):
-    neighbors = []
-
-    for vehicle_idx, rides in enumerate(solution):
-        ride_count = len(rides)
-        if ride_count < 2:
-            continue
-
-        # Reorder por trocas de pares dentro do mesmo veiculo.
-        for i in range(ride_count):
-            for j in range(i + 1, ride_count):
-                candidate = _clone_solution(solution)
-                candidate[vehicle_idx][i], candidate[vehicle_idx][j] = (
-                    candidate[vehicle_idx][j],
-                    candidate[vehicle_idx][i],
-                )
-                neighbors.append(candidate)
-
-    return neighbors
+def _apply_random_reorder(candidate):
+    valid_vehicles = [i for i, rides in enumerate(candidate) if len(rides) >= 2]
+    if not valid_vehicles: return False
+    
+    v = random.choice(valid_vehicles)
+    i, j = random.sample(range(len(candidate[v])), 2)
+    candidate[v][i], candidate[v][j] = candidate[v][j], candidate[v][i]
+    return True

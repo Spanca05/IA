@@ -13,33 +13,29 @@ def greedy_heuristic(vehicle, ride, bonus):
     
 
 def greedy_solution(problem):
-    vehicles = []
-    remaining_rides = list(problem.rides)
+    # Inicializar veículos e solução
+    vehicles = [Vehicle(id) for id in range(problem.vehicles)]
     solution = [[] for _ in range(problem.vehicles)]
 
-    for id in range(problem.vehicles):
-        vehicle = Vehicle(id)
-        vehicles.append(vehicle)
+    # O SEGREDO DO SUCESSO: Ordenar as viagens pela hora de início (earliest_start)
+    # Assim só precisamos de iterar uma única vez pelas viagens!
+    sorted_rides = sorted(problem.rides, key=lambda r: r.earliest_start)
 
-    while (remaining_rides):
+    for ride in sorted_rides:
         best_vehicle = None
-        best_ride = None
         best_value = 0
 
+        # Para esta viagem específica, qual é o melhor carro disponível agora?
         for vehicle in vehicles:
-            for ride in remaining_rides:
-                value = greedy_heuristic(vehicle, ride, problem.bonus)
+            value = greedy_heuristic(vehicle, ride, problem.bonus)
 
-                if value > best_value:
-                    best_value = value
-                    best_vehicle = vehicle
-                    best_ride = ride
+            if value > best_value:
+                best_value = value
+                best_vehicle = vehicle
                 
-        if best_vehicle is None or best_ride is None or best_value <= 0:
-            break
-
-        solution[best_vehicle.id].append(best_ride)
-        ride_simulation(best_vehicle, best_ride, problem.bonus)
-        remaining_rides.remove(best_ride)
+        # Se algum carro conseguiu um valor positivo, atribui e avança
+        if best_vehicle is not None and best_value > 0:
+            solution[best_vehicle.id].append(ride)
+            ride_simulation(best_vehicle, ride, problem.bonus)
 
     return solution
