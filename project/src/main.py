@@ -34,12 +34,12 @@ def solve_instance(input_path, output_path, algorithm_name, show_solution=True):
 
 def ask_instance_number():
     while True:
-        user_value = input("Escolhe o numero da instancia (1-3): ").strip()
+        user_value = input("Escolhe o numero da instancia (1-7): ").strip()
 
-        if user_value in ("1", "2", "3"):
+        if user_value in ("1", "2", "3", "4", "5", "6", "7"):
             return int(user_value)
 
-        print("Valor invalido. Tem de ser um numero entre 1 e 3.")
+        print("Valor invalido. Tem de ser um numero entre 1 e 7.")
 
 def ask_algorithm():
     while True:

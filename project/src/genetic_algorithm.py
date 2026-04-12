@@ -1,4 +1,5 @@
 import random
+import time
 
 from evaluator import evaluate_solution
 from greedy import greedy_solution
@@ -69,9 +70,14 @@ def random_solution(problem):
 
 def initial_population(problem, population_size):
     population = []
+    ride_count = len(problem.rides)
 
-    # Seed the population with one heuristic solution for faster convergence.
-    population.append(clone_solution(greedy_solution(problem)))
+    # For small/medium instances, a greedy seed helps convergence.
+    # For very large instances it can dominate runtime, so skip it.
+    if ride_count <= 2000:
+        population.append(clone_solution(greedy_solution(problem)))
+    else:
+        population.append(random_solution(problem))
 
     while len(population) < population_size:
         population.append(random_solution(problem))
@@ -230,7 +236,23 @@ def genetic_algorithm_solution(
     elite_count=DEFAULT_ELITE_COUNT,
     mutation_rate=DEFAULT_MUTATION_RATE,
     order_crossover_prob=DEFAULT_ORDER_CROSSOVER_PROB,
+    max_no_improvement_generations=None,
+    max_seconds=None,
+    auto_tune=True,
 ):
+    ride_count = len(problem.rides)
+
+    if auto_tune and ride_count >= 5000:
+        # Keep custom parameterizations intact; only downscale legacy heavy defaults.
+        if population_size == DEFAULT_POPULATION_SIZE:
+            population_size = 12
+        if generations == DEFAULT_GENERATIONS:
+            generations = 20
+        if tournament_size == DEFAULT_TOURNAMENT_SIZE:
+            tournament_size = 2
+        if elite_count == DEFAULT_ELITE_COUNT:
+            elite_count = 2
+
     if population_size <= 0:
         raise ValueError("population_size must be > 0")
     if generations <= 0:
@@ -245,14 +267,30 @@ def genetic_algorithm_solution(
         raise ValueError("mutation_rate must be in [0, 1]")
     if not 0 <= order_crossover_prob <= 1:
         raise ValueError("order_crossover_prob must be in [0, 1]")
+    if max_no_improvement_generations is not None and max_no_improvement_generations < 0:
+        raise ValueError("max_no_improvement_generations must be >= 0")
+    if max_seconds is not None and max_seconds <= 0:
+        raise ValueError("max_seconds must be > 0")
+
+    if max_no_improvement_generations is None:
+        # On large inputs, cap wasted generations with no progress.
+        if ride_count >= 5000:
+            max_no_improvement_generations = min(8, generations)
+        else:
+            max_no_improvement_generations = max(10, generations // 3)
 
     population = initial_population(problem, population_size)
 
     best_solution = None
     best_score = -1
     history = []
+    no_improvement_generations = 0
+    start_time = time.perf_counter()
 
     for generation in range(generations):
+        if max_seconds is not None and (time.perf_counter() - start_time) >= max_seconds:
+            break
+
         fitness_cache = {id(candidate): fitness(problem, candidate) for candidate in population}
 
         generation_best = max(population, key=lambda candidate: fitness_cache[id(candidate)])
@@ -261,8 +299,14 @@ def genetic_algorithm_solution(
         if generation_best_score > best_score:
             best_score = generation_best_score
             best_solution = clone_solution(generation_best)
+            no_improvement_generations = 0
+        else:
+            no_improvement_generations += 1
 
         history.append({"generation": generation, "best_score": best_score})
+
+        if no_improvement_generations >= max_no_improvement_generations:
+            break
 
         elites = sorted(population, key=lambda candidate: fitness_cache[id(candidate)], reverse=True)[:elite_count]
         new_population = [clone_solution(elite) for elite in elites]

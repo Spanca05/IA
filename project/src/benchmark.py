@@ -9,7 +9,7 @@ from parser import parse_input
 from solvers import solve_with_algorithm
 
 
-INSTANCE_IDS = [1, 2, 3]
+INSTANCE_IDS = [1, 2, 3, 4, 5, 6, 7]
 ALGORITHMS = ["greedy", "hill_climbing", "simulated_annealing", "genetic_algorithm"]
 
 SA_PARAM_GRID = [
