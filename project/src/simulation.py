@@ -1,14 +1,10 @@
 from models import Ride, Vehicle
 
 def gets_bonus(start_time, earliest_start):
-    if start_time == earliest_start:
-        return True
-    return False
+    return start_time == earliest_start
     
 def receives_points(finish_time, latest_finish):
-    if finish_time <= latest_finish:
-        return True
-    return False
+    return finish_time <= latest_finish
 
 def ride_simulation(vehicle, ride, bonus):
     points = 0

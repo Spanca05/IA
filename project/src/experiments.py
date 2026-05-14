@@ -24,7 +24,7 @@ def run_experiment(input_path, algorithm_name, params=None, output_path=None, wr
 	problem = parse_input(input_path)
 
 	start_time = time.perf_counter()
-	solution, score = solve_with_algorithm(problem, algorithm_name, params=params)
+	solution, score, _ = solve_with_algorithm(problem, algorithm_name, params=params)
 	end_time = time.perf_counter()
 
 	if write_solution and output_path is not None:

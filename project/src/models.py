@@ -28,7 +28,7 @@ class Problem:
         self.steps = steps
 
     def __str__(self):
-        return f"Grid is ({self.grid_rows},{self.grid_columns}), there are {self.vehicles} vehicles in total, {self.rides} rides, the per-ride bonus is {self.bonus} and the number of steps in the simulation are {self.steps}"
+        return f"Grid is ({self.grid_rows},{self.grid_columns}), there are {self.vehicles} vehicles in total, {len(self.rides)} rides, the per-ride bonus is {self.bonus} and the number of steps in the simulation are {self.steps}"
     
 class Vehicle:
     def __init__(self, id, row=0, column=0, time=0):
