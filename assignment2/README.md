@@ -58,18 +58,120 @@ The main objectives of this project are:
 - Python
 - Pandas
 - NumPy
-- Matplotlib
+- Matplotlib & Seaborn
 - Scikit-learn
 - Jupyter Notebook
+- Streamlit (web demo)
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+1. Python 3.14+ installed
+2. Virtual environment created and activated
+3. Dependencies installed: `pip install pandas numpy matplotlib seaborn scikit-learn jupyter streamlit`
+
+### How to Run
+
+The project follows a complete pipeline from data generation to interactive prediction:
+
+#### Step 1: Generate the Dataset
+```bash
+python assignment2/data/generate_dataset.py
+```
+This creates `assignment2/data/students_dataset.csv` with 1000 synthetic student records.
+
+#### Step 2: Train the Model
+Open and run the notebook `assignment2/notebooks/02_model_training.ipynb`:
+- Loads the generated dataset
+- Applies proper scaling (prevents data leakage)
+- Trains and compares three models: Logistic Regression, Decision Tree, Random Forest
+- Evaluates with multiple metrics (Accuracy, Precision, Recall, F1, ROC-AUC)
+- Saves trained artifacts:
+  - `assignment2/models/student_risk_model.joblib` (bundled model)
+  - `assignment2/models/scaler.joblib` (StandardScaler)
+  - Model comparison metrics in `assignment2/results/`
+
+**Note:** This notebook must be run before launching the app, as the app depends on the trained model artifacts.
+
+#### Step 3: Launch the Interactive Web App
+```bash
+streamlit run assignment2/app/streamlit_app.py
+```
+The app provides an interactive interface to:
+- Input student features via sliders and selectors
+- Get real-time risk predictions
+- View probability of academic risk
 
 ---
 
 ## Project Structure
 
 ```text
-project/
+assignment2/
 │
 ├── data/              # Dataset files
+│   └── generate_dataset.py     # Dataset generation script
 ├── notebooks/         # Jupyter notebooks
-├── src/               # Source code
-├── README.md
+│   ├── 01_eda.ipynb            # Exploratory Data Analysis
+│   └── 02_model_training.ipynb # Model training & artifact generation
+├── app/               # Streamlit web application
+│   ├── streamlit_app.py        # Main app
+│   └── README.md               # App documentation
+├── models/            # Generated model artifacts (.joblib)
+├── results/           # Evaluation results & metrics
+└── README.md
+```
+
+---
+
+## Workflow Diagram
+
+```
+generate_dataset.py → students_dataset.csv
+                          ↓
+                    01_eda.ipynb (optional, for analysis)
+                          ↓
+                    02_model_training.ipynb
+                          ↓
+                    *.joblib files (models, scaler)
+                          ↓
+                    streamlit_app.py
+                          ↓
+                    Interactive web interface
+```
+
+---
+
+## Model Performance
+
+The best-performing model (Logistic Regression) achieved:
+- **Accuracy:** 83.5%
+- **Precision:** 75.47%
+- **Recall:** 66.67%
+- **F1-Score:** 70.80%
+- **ROC-AUC:** 90.90%
+
+Key finding: **Weekly study time** is the strongest negative predictor of academic risk (correlation: -0.42).
+
+---
+
+## Important Notes
+
+1. **Data Leakage Prevention:** The model uses proper train/test split before scaling, ensuring scalers are fit only on training data.
+
+2. **Artifact Generation:** Model artifacts (`.joblib` files) are generated when running `02_model_training.ipynb` and are required for the app to function.
+
+3. **Feature Scaling:** The app automatically scales user inputs using the same StandardScaler fitted during training.
+
+4. **Reproducibility:** All results are deterministic with `random_state=42` for train/test split and model initialization.
+
+---
+
+## Academic Context
+
+Artificial Intelligence - Assignment 2
+
+Faculty of Engineering, University of Porto (FEUP)
