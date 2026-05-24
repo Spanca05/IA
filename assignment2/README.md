@@ -79,26 +79,26 @@ The project follows a complete pipeline from data generation to interactive pred
 
 #### Step 1: Generate the Dataset
 ```bash
-python assignment2/data/generate_dataset.py
+python data/generate_dataset.py
 ```
-This creates `assignment2/data/students_dataset.csv` with 1000 synthetic student records.
+This creates `data/students_dataset.csv` with 1000 synthetic student records.
 
 #### Step 2: Train the Model
-Open and run the notebook `assignment2/notebooks/02_model_training.ipynb`:
+Open and run the notebook `notebooks/02_model_training.ipynb`:
 - Loads the generated dataset
 - Applies proper scaling (prevents data leakage)
 - Trains and compares three models: Logistic Regression, Decision Tree, Random Forest
 - Evaluates with multiple metrics (Accuracy, Precision, Recall, F1, ROC-AUC)
 - Saves trained artifacts:
-  - `assignment2/models/student_risk_model.joblib` (bundled model)
-  - `assignment2/models/scaler.joblib` (StandardScaler)
-  - Model comparison metrics in `assignment2/results/`
+  - `models/student_risk_model.joblib` (bundled model)
+  - `results/scaler.joblib` (StandardScaler)
+  - Model comparison metrics in `results/`
 
 **Note:** This notebook must be run before launching the app, as the app depends on the trained model artifacts.
 
 #### Step 3: Launch the Interactive Web App
 ```bash
-streamlit run assignment2/app/streamlit_app.py
+streamlit run app/streamlit_app.py
 ```
 The app provides an interactive interface to:
 - Input student features via sliders and selectors

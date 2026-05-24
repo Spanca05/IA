@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pandas as pd
 import random
 
@@ -117,7 +119,7 @@ for student_id in range(1, NUM_STUDENTS + 1):
 df = pd.DataFrame(students)
 
 
-df.to_csv("assignment2/data/students_dataset.csv", index=False)
+df.to_csv(Path(__file__).parent / "students_dataset.csv", index=False)
 
 print("Dataset generated successfully!")
 print(df.head())
