@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project aims to analyze student lifestyle and academic behavior data in order to identify students who may be academically at risk.
+This project aims to analyze university student lifestyle and academic behavior data in order to identify students who are at risk of failing the academic year or dropping out.
 
 Using a synthetic dataset containing factors such as study time, absences, sleep habits, stress levels, parental support, tutoring, and extracurricular activities, the project explores how different variables may influence student performance and academic risk levels.
 
@@ -28,14 +28,14 @@ It contains multiple features related to student behavior, lifestyle, and suppor
 | `parental_support` | Level of parental support (0–4) |
 | `tutoring` | Whether the student receives tutoring (0/1) |
 | `extracurricular` | Participation in extracurricular activities (0/1) |
-| `at_risk` | Target variable indicating academic risk (0/1) |
+| `at_risk` | Target variable indicating risk of year failure or dropout (0/1) |
 
 ### Target Variable
 
 | Value | Meaning |
 |---|---|
-| `0` | Student is not considered at risk |
-| `1` | Student is considered at risk |
+| `0` | Student is not at risk of year failure or dropout |
+| `1` | Student is at risk of failing the academic year or dropping out |
 
 ---
 
@@ -69,7 +69,7 @@ The main objectives of this project are:
 
 ### Prerequisites
 
-1. Python 3.14+ installed
+1. Python 3.9+ installed
 2. Virtual environment created and activated
 3. Dependencies installed: `pip install pandas numpy matplotlib seaborn scikit-learn jupyter streamlit`
 
@@ -148,11 +148,11 @@ generate_dataset.py → students_dataset.csv
 ## Model Performance
 
 The best-performing model (Logistic Regression) achieved:
-- **Accuracy:** 83.5%
-- **Precision:** 75.47%
-- **Recall:** 66.67%
-- **F1-Score:** 70.80%
-- **ROC-AUC:** 90.90%
+- **Accuracy:** 78.50%
+- **Precision:** 71.19%
+- **Recall:** 61.76%
+- **F1-Score:** 66.14%
+- **ROC-AUC:** 85.09%
 
 Key finding: **Weekly study time** is the strongest negative predictor of academic risk (correlation: -0.42).
 

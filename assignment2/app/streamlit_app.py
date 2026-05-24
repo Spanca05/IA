@@ -123,7 +123,7 @@ def build_input_frame() -> pd.DataFrame:
         tutoring = st.selectbox("Tutoring", ["No", "Yes"], index=0)
 
     with col2:
-        absences = st.slider("Absences", 0, 40, 8, 1)
+        absences = st.slider("Absences", 0, 20, 5, 1)
         stress_level = st.slider("Stress level", 1, 10, 5, 1)
         extracurricular = st.selectbox("Extracurricular", ["No", "Yes"], index=1)
 
@@ -148,7 +148,7 @@ st.markdown(
     """
     <div class="hero">
         <h1>Student At-Risk Prediction</h1>
-        <p>Small Streamlit demo for the assignment. Enter a student's profile and the trained model estimates whether the student may be academically at risk.</p>
+        <p>Enter a university student's profile and the trained model estimates whether the student is at risk of failing the academic year or dropping out.</p>
     </div>
     """,
     unsafe_allow_html=True,
@@ -161,7 +161,7 @@ left, right = st.columns([1.2, 0.8], gap="large")
 with left:
     st.subheader("Input profile")
     input_df = build_input_frame()
-    predict = st.button("Predict", type="primary", width="stretch")
+    predict = st.button("Predict", type="primary", use_container_width=True)
 
 with right:
     st.subheader("Model info")
@@ -200,14 +200,14 @@ if predict:
 
     proba = float(model.predict_proba(features_for_model)[0, 1])
     label = int(proba >= 0.5)
-    result_text = "At Risk" if label == 1 else "Not At Risk"
+    result_text = "At Risk of Dropout / Year Failure" if label == 1 else "Not At Risk"
 
     with st.container():
         if label == 1:
             st.markdown(
                 f"""
                 <div class="result-risk">
-                    <h3 style="margin: 0 0 0.4rem 0;">Prediction: At Risk</h3>
+                    <h3 style="margin: 0 0 0.4rem 0;">Prediction: At Risk of Dropout / Year Failure</h3>
                     <p style="margin: 0;">Estimated risk probability: <strong>{proba:.1%}</strong></p>
                 </div>
                 """,
