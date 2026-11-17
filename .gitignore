@@ -1,3 +1,6 @@
 results/*
+assignment2/results/*
+assignment2/models/*
+*.joblib
 venv*
 **/__pycache__*
